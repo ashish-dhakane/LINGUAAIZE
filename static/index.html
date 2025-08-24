@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI English Coach - Improve Your English Skills</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-ring {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { box-shadow: 0 0 0 14px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+        
+        .progress-ring {
+            transition: stroke-dashoffset 0.5s ease-in-out;
+        }
+        
+        .message-bubble {
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+        
+        .typing-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-10px); }
+        }
+        
+        .practice-prompt {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .practice-prompt:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .mic-button {
+            transition: all 0.3s ease;
+        }
+        
+        .mic-button.listening {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+        
+        .feedback-card {
+            transition: all 0.3s ease;
+        }
+        
+        .feedback-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-graduation-cap text-white text-lg"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-800">AI English Coach</h1>
+            </div>
+            <button id="wallet-connect" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-md">
+                <i class="fas fa-wallet mr-2"></i>Connect Wallet
+            </button>
+        </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="bg-white border-b border-gray-200 sticky top-16 z-40">
+        <div class="container mx-auto">
+            <div class="flex overflow-x-auto">
+                <button data-tab="write" class="tab-button flex-1 py-4 px-6 text-center font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-500 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-edit"></i> Write
+                </button>
+                <button data-tab="speak" class="tab-button flex-1 py-4 px-6 text-center font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-500 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-microphone"></i> Speak
+                </button>
+                <button data-tab="chat" class="tab-button flex-1 py-4 px-6 text-center font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-500 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-comments"></i> Chat
+                </button>
+                <button data-tab="progress" class="tab-button flex-1 py-4 px-6 text-center font-medium text-gray-600 hover:text-blue-600 border-b-2 border-transparent hover:border-blue-500 transition-all duration-300 flex items-center justify-center gap-2">
+                    <i class="fas fa-chart-line"></i> Progress
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Write Tab -->
+        <div id="write-tab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Improve Your Writing Skills</h2>
+                <p class="text-gray-600 mb-8 text-center">Write in English and get instant AI-powered feedback on grammar, vocabulary, and style.</p>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                    <textarea id="writing-input" placeholder="Start writing in English here... You can write about your day, describe a picture, or practice specific grammar points." class="w-full h-64 p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-700 transition-all duration-300"></textarea>
+                    
+                    <div class="flex justify-between items-center mt-4">
+                        <div class="text-sm text-gray-500" id="word-count">0 words</div>
+                        <button id="analyze-btn" class="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center gap-2">
+                            <i class="fas fa-robot"></i> Analyze Text
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="writing-feedback" class="bg-white rounded-2xl shadow-xl p-6 hidden">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-yellow-500"></i> AI Feedback
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="feedback-card bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                            <h4 class="font-semibold text-blue-800 mb-2">Grammar Suggestions</h4>
+                            <p class="text-blue-700">Your sentence structure is good! Consider using more complex sentences with conjunctions like 'although', 'however', or 'therefore'.</p>
+                        </div>
+                        <div class="feedback-card bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                            <h4 class="font-semibold text-green-800 mb-2">Vocabulary Enhancement</h4>
+                            <p class="text-green-700">Try replacing 'very good' with more descriptive words like 'excellent', 'outstanding', or 'impressive' to enhance your expression.</p>
+                        </div>
+                        <div class="feedback-card bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
+                            <h4 class="font-semibold text-purple-800 mb-2">Overall Score</h4>
+                            <div class="flex items-center gap-4">
+                                <div class="relative w-20 h-20">
+                                    <svg class="w-full h-full" viewBox="0 0 36 36">
+                                        <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" stroke-width="3"/>
+                                        <path class="progress-ring" stroke="#667eea" stroke-width="3" stroke-dasharray="85, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                        <text x="18" y="21" text-anchor="middle" fill="#667eea" font-size="8" font-weight="bold">85%</text>
+                                    </svg>
+                                </div>
+                                <p class="text-purple-700 flex-1">Great effort! Your writing shows good understanding of basic grammar rules. Keep practicing to improve complexity and variety.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="try-again-btn" class="mt-6 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-300">
+                        Try Another Text
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Speak Tab -->
+        <div id="speak-tab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Practice Your Speaking Skills</h2>
+                <p class="text-gray-600 mb-8 text-center">Click the microphone and start speaking. The AI will transcribe your speech and provide practice prompts.</p>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-8 text-center mb-8">
+                    <div class="relative inline-block mb-6">
+                        <button id="mic-button" class="mic-button w-24 h-24 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-full flex items-center justify-center text-3xl shadow-xl transition-all duration-300">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <div id="pulse-ring" class="pulse-ring absolute inset-0 border-4 border-red-400 rounded-full opacity-0"></div>
+                    </div>
+                    
+                    <div id="speech-status" class="text-lg font-medium text-gray-700 mb-4">
+                        Click the microphone to start speaking
+                    </div>
+                    
+                    <div id="transcript-display" class="bg-gray-50 p-6 rounded-lg min-h-32 text-left text-gray-700 mb-6 border border-gray-200">
+                        <p class="text-gray-500 italic">Your speech will appear here...</p>
+                    </div>
+                    
+                    <div id="error-message" class="bg-red-50 text-red-700 p-4 rounded-lg mb-6 hidden">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span id="error-text">Error message will appear here</span>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fas fa-comment-dots text-blue-500"></i> Practice Prompts
+                    </h3>
+                    <div id="practice-prompts" class="space-y-4">
+                        <div class="practice-prompt text-white p-4 rounded-lg cursor-pointer transition-all duration-300">
+                            <p class="font-medium">"Describe your favorite holiday destination and why you enjoy going there."</p>
+                        </div>
+                        <div class="practice-prompt text-white p-4 rounded-lg cursor-pointer opacity-80">
+                            <p class="font-medium">"Talk about a book or movie that significantly influenced you and explain why."</p>
+                        </div>
+                        <div class="practice-prompt text-white p-4 rounded-lg cursor-pointer opacity-60">
+                            <p class="font-medium">"Explain your profession or field of study to someone who has no background knowledge about it."</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Tab -->
+        <div id="chat-tab" class="tab-content">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Chat with AI Tutor</h2>
+                <p class="text-gray-600 mb-8 text-center">Practice conversational English with our AI tutor. It will help you improve your communication skills in a natural way.</p>
+                
+                <div class="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
+                    <div id="chat-messages" class="h-96 overflow-y-auto p-6 space-y-4 bg-gray-50">
+                        <div class="message-bubble bg-blue-100 text-blue-800 p-4 rounded-2xl rounded-bl-none ml-auto">
+                            <p>Hello! I'm ready to practice English. How are you today?</p>
+                            <span class="text-xs text-blue-600 block mt-1">Just now</span>
+                        </div>
+                        <div class="message-bubble bg-gray-100 text-gray-800 p-4 rounded-2xl rounded-br-none mr-auto">
+                            <p>Hello! I'm doing well, thank you for asking. How about you? How has your day been so far?</p>
+                            <span class="text-xs text-gray-600 block mt-1">AI Tutor</span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-4 border-t border-gray-200">
+                        <div class="flex space-x-3">
+                            <input type="text" id="chat-input" placeholder="Type your message here..." class="flex-1 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <button id="send-message" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors duration-300 flex items-center gap-2">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-2xl shadow-md text-center">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Quick Responses</h4>
+                        <p class="text-sm text-gray-600">Get instant feedback on your conversational skills</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-md text-center">
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-language"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Natural Dialogues</h4>
+                        <p class="text-sm text-gray-600">Practice real-life conversation scenarios</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-2xl shadow-md text-center">
+                        <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                        <h4 class="font-semibold text-gray-800 mb-2">Learning Tips</h4>
+                        <p class="text-sm text-gray-600">Receive personalized learning suggestions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Tab -->
+        <div id="progress-tab" class="tab-content">
+            <div class="max-w-6xl mx-auto">
+                <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Your Learning Progress</h2>
+                <p class="text-gray-600 mb-8 text-center">Track your improvement across different English skills and see how far you've come.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-2xl shadow-xl text-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Accuracy</h3>
+                        <div class="relative w-32 h-32 mx-auto mb-4">
+                            <svg class="w-full h-full" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" stroke-width="3"/>
+                                <path class="progress-ring" stroke="#10b981" stroke-width="3" stroke-dasharray="78, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <text x="18" y="21" text-anchor="middle" fill="#10b981" font-size="8" font-weight="bold">78%</text>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600">Grammar and vocabulary precision</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-xl text-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Fluency</h3>
+                        <div class="relative w-32 h-32 mx-auto mb-4">
+                            <svg class="w-full h-full" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" stroke-width="3"/>
+                                <path class="progress-ring" stroke="#3b82f6" stroke-width="3" stroke-dasharray="65, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <text x="18" y="21" text-anchor="middle" fill="#3b82f6" font-size="8" font-weight="bold">65%</text>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600">Smoothness and flow in communication</p>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-xl text-center">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Consistency</h3>
+                        <div class="relative w-32 h-32 mx-auto mb-4">
+                            <svg class="w-full h-full" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#eee" stroke-width="3"/>
+                                <path class="progress-ring" stroke="#8b5cf6" stroke-width="3" stroke-dasharray="82, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+                                <text x="18" y="21" text-anchor="middle" fill="#8b5cf6" font-size="8" font-weight="bold">82%</text>
+                            </svg>
+                        </div>
+                        <p class="text-gray-600">Regular practice and improvement rate</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-6 mb-8">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-history text-gray-600"></i> Recent Activity
+                    </h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-edit"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Writing Practice</h4>
+                                    <p class="text-sm text-gray-600">Completed 15 minutes ago</p>
+                                </div>
+                            </div>
+                            <span class="bg-green-100 text-green-800 text-sm px-3 py-1 rounded-full">85% Score</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Speaking Exercise</h4>
+                                    <p class="text-sm text-gray-600">Completed 2 hours ago</p>
+                                </div>
+                            </div>
+                            <span class="bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full">3 minutes</span>
+                        </div>
+                        
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-comments"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-800">Chat Practice</h4>
+                                    <p class="text-sm text-gray-600">Completed yesterday</p>
+                                </div>
+                            </div>
+                            <span class="bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full">8 messages</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-2xl shadow-xl p-6">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-6 flex items-center gap-2">
+                        <i class="fas fa-trophy text-yellow-500"></i> Achievements
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-pencil-alt"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-800">First Essay</h4>
+                            <p class="text-sm text-gray-600">Complete your first writing practice</p>
+                        </div>
+                        
+                        <div class="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-800">Voice Master</h4>
+                            <p class="text-sm text-gray-600">5 speaking sessions completed</p>
+                        </div>
+                        
+                        <div class="text-center p-4 bg-green-50 rounded-lg border border-green-200 opacity-50">
+                            <div class="w-12 h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-800">Chat Champion</h4>
+                            <p class="text-sm text-gray-600">20+ messages exchanged (5/20)</p>
+                        </div>
+                        
+                        <div class="text-center p-4 bg-purple-50 rounded-lg border border-purple-200 opacity-50">
+                            <div class="w-12 h-12 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h4 class="font-medium text-gray-800">Consistent Learner</h4>
+                            <p class="text-sm text-gray-600">Practice 7 days in a row (3/7)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12 py-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600">© 2024 AI English Coach. Designed to help you master English through AI-powered practice.</p>
+            <div class="flex justify-center space-x-6 mt-4">
+                <a href="#" class="text-gray-500 hover:text-blue-600 transition-colors duration-300">
+                    <i class="fab fa-github text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-500 hover:text-blue-600 transition-colors duration-300">
+                    <i class="fab fa-twitter text-xl"></i>
+                </a>
+                <a href="#" class="text-gray-500 hover:text-blue-600 transition-colors duration-300">
+                    <i class="fab fa-linkedin text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab Switching Logic
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Show write tab by default
+            document.getElementById('write-tab').classList.add('active');
+            document.querySelector('[data-tab="write"]').classList.add('border-blue-500', 'text-blue-600');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.getAttribute('data-tab');
+                    
+                    // Update active tab button
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('border-blue-500', 'text-blue-600');
+                        btn.classList.add('border-transparent', 'text-gray-600');
+                    });
+                    button.classList.add('border-blue-500', 'text-blue-600');
+                    button.classList.remove('border-transparent', 'text-gray-600');
+                    
+                    // Show active tab content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                    
+                    // Stop speech recognition if moving away from speak tab
+                    if (tabId !== 'speak' && recognition) {
+                        recognition.stop();
+                        resetMicButton();
+                    }
+                });
+            });
+            
+            // Write Tab Functionality
+            const writingInput = document.getElementById('writing-input');
+            const analyzeBtn = document.getElementById('analyze-btn');
+            const writingFeedback = document.getElementById('writing-feedback');
+            const tryAgainBtn = document.getElementById('try-again-btn');
+            const wordCount = document.getElementById('word-count');
+            
+            writingInput.addEventListener('input', () => {
+                const text = writingInput.value.trim();
+                const words = text ? text.split(/\s+/).length : 0;
+                wordCount.textContent = `${words} word${words !== 1 ? 's' : ''}`;
+                
+                analyzeBtn.disabled = words < 5;
+                analyzeBtn.classList.toggle('opacity-50', words < 5);
+                analyzeBtn.classList.toggle('cursor-not-allowed', words < 5);
+            });
+            
+            analyzeBtn.addEventListener('click', () => {
+                writingFeedback.classList.remove('hidden');
+                writingFeedback.scrollIntoView({ behavior: 'smooth' });
+            });
+            
+            tryAgainBtn.addEventListener('click', () => {
+                writingInput.value = '';
+                writingFeedback.classList.add('hidden');
+                wordCount.textContent = '0 words';
+                analyzeBtn.disabled = true;
+                analyzeBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+            
+            // Speak Tab Functionality
+            const micButton = document.getElementById('mic-button');
+            const speechStatus = document.getElementById('speech-status');
+            const transcriptDisplay = document.getElementById('transcript-display');
+            const errorMessage = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            const pulseRing = document.getElementById('pulse-ring');
+            const practicePrompts = document.querySelectorAll('.practice-prompt');
+            
+            let recognition;
+            let isListening = false;
+            let currentPromptIndex = 0;
+            
+            // Initialize speech recognition
+            try {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (SpeechRecognition) {
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.interimResults = true;
+                    recognition.lang = 'en-US';
+                    
+                    recognition.onstart = () => {
+                        isListening = true;
+                        micButton.classList.add('listening');
+                        pulseRing.classList.remove('opacity-0');
+                        speechStatus.textContent = 'Listening... Speak now';
+                        transcriptDisplay.innerHTML = '<p class="text-gray-700">Listening...</p>';
+                    };
+                    
+                    recognition.onresult = (event) => {
+                        const transcript = Array.from(event.results)
+                            .map(result => result[0])
+                            .map(result => result.transcript)
+                            .join('');
+                        
+                        transcriptDisplay.innerHTML = `<p class="text-gray-700">${transcript}</p>`;
+                    };
+                    
+                    recognition.onend = () => {
+                        resetMicButton();
+                        speechStatus.textContent = 'Processing your speech...';
+                        
+                        // Simulate processing delay
+                        setTimeout(() => {
+                            speechStatus.textContent = 'Click the microphone to speak again';
+                            
+                            // Cycle through practice prompts
+                            practicePrompts.forEach((prompt, index) => {
+                                prompt.style.opacity = index === currentPromptIndex ? '1' : '0.8';
+                                prompt.style.transform = index === currentPromptIndex ? 'translateY(-2px)' : 'none';
+                            });
+                            
+                            currentPromptIndex = (currentPromptIndex + 1) % practicePrompts.length;
+                        }, 1500);
+                    };
+                    
+                    recognition.onerror = (event) => {
+                        resetMicButton();
+                        errorText.textContent = `Error: ${event.error}`;
+                        errorMessage.classList.remove('hidden');
+                        speechStatus.textContent = 'Error occurred. Please try again.';
+                    };
+                } else {
+                    throw new Error('Speech Recognition not supported');
+                }
+            } catch (error) {
+                micButton.disabled = true;
+                micButton.classList.add('opacity-50', 'cursor-not-allowed');
+                errorText.textContent = 'Speech recognition is not supported in your browser. Please try Chrome or Edge.';
+                errorMessage.classList.remove('hidden');
+                speechStatus.textContent = 'Browser not supported';
+            }
+            
+            micButton.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    errorMessage.classList.add('hidden');
+                    try {
+                        recognition.start();
+                    } catch (error) {
+                        errorText.textContent = 'Unable to start speech recognition';
+                        errorMessage.classList.remove('hidden');
+                    }
+                }
+            });
+            
+            function resetMicButton() {
+                isListening = false;
+                micButton.classList.remove('listening');
+                pulseRing.classList.add('opacity-0');
+            }
+            
+            // Chat Tab Functionality
+            const chatInput = document.getElementById('chat-input');
+            const sendMessageBtn = document.getElementById('send-message');
+            const chatMessages = document.getElementById('chat-messages');
+            
+            sendMessageBtn.addEventListener('click', sendMessage);
+            chatInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            function sendMessage() {
+                const message = chatInput.value.trim();
+                if (message) {
+                    // Add user message
+                    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const userMessageHtml = `
+                        <div class="message-bubble bg-blue-100 text-blue-800 p-4 rounded-2xl rounded-bl-none ml-auto">
+                            <p>${message}</p>
+                            <span class="text-xs text-blue-600 block mt-1">${timestamp}</span>
+                        </div>
+                    `;
+                    chatMessages.innerHTML += userMessageHtml;
+                    
+                    // Clear input
+                    chatInput.value = '';
+                    
+                    // Scroll to bottom
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Show AI is typing
+                    const typingIndicator = `
+                        <div class="message-bubble bg-gray-100 text-gray-800 p-4 rounded-2xl rounded-br-none mr-auto">
+                            <div class="typing-indicator">
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                                <span class="typing-dot"></span>
+                            </div>
+                        </div>
+                    `;
+                    chatMessages.innerHTML += typingIndicator;
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Simulate AI response after delay
+                    setTimeout(() => {
+                        // Remove typing indicator
+                        chatMessages.removeChild(chatMessages.lastChild);
+                        
+                        // Add AI response
+                        const aiResponses = [
+                            "That's interesting! Can you tell me more about that?",
+                            "I understand what you're saying. Have you considered practicing this in different contexts?",
+                            "Good point! Your English is improving. Remember to use varied sentence structures.",
+                            "I appreciate you sharing that. Let's try to use some new vocabulary in our next exchange.",
+                            "Well expressed! Your communication skills are developing nicely."
+                        ];
+                        
+                        const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+                        const aiMessageHtml = `
+                            <div class="message-bubble bg-gray-100 text-gray-800 p-4 rounded-2xl rounded-br-none mr-auto">
+                                <p>${randomResponse}</p>
+                                <span class="text-xs text-gray-600 block mt-1">AI Tutor</span>
+                            </div>
+                        `;
+                        chatMessages.innerHTML += aiMessageHtml;
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }, 2000);
+                }
+            }
+            
+            // Wallet Connect Button
+            document.getElementById('wallet-connect').addEventListener('click', () => {
+                alert('Wallet connection feature will be implemented for blockchain integration. This is placeholder functionality.');
+            });
+        });
+    </script>
+</body>
+</html>
+

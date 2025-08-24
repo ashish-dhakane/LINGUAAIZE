@@ -1,0 +1,21 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 2em;
+    text-align: center;
+}
+
+button {
+    padding: 1em 2em;
+    font-size: 1em;
+    margin: 1em;
+    cursor: pointer;
+}
+
+#result {
+    margin-top: 2em;
+    font-size: 1.2em;
+    color: #333;
+    border: 1px solid #ccc;
+    padding: 1em;
+    min-height: 3em;
+}
